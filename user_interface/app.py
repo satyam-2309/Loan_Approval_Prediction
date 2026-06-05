@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import pickle
+import os
 
 # ---------------- PAGE CONFIG ---------------- #
 
@@ -12,8 +13,13 @@ st.set_page_config(
 
 # ---------------- LOAD MODEL ---------------- #
 
-model = pickle.load(open('loan_approval_model.pkl', 'rb'))
-normalizer = pickle.load(open('normalizer.pkl', 'rb'))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+model_path = os.path.join(BASE_DIR, "loan_approval_model.pkl")
+normalizer_path = os.path.join(BASE_DIR, "normalizer.pkl")
+
+model = pickle.load(open(model_path, "rb"))
+normalizer = pickle.load(open(normalizer_path, "rb"))
 
 # ---------------- CUSTOM CSS ---------------- #
 
@@ -180,15 +186,11 @@ input_data = pd.DataFrame({
     ' bank_asset_value': [bank_asset_value]
 })
 
-# ---------------- NORMALIZATION ---------------- #
-
-input_normalized = normalizer.transform(input_data)
-
 # ---------------- PREDICTION ---------------- #
 
 if st.button("Predict Loan Approval"):
 
-    # Banking Validation
+    input_normalized = normalizer.transform(input_data)
 
     if loan_amount > income_annum * 5:
 
@@ -210,10 +212,10 @@ if st.button("Predict Loan Approval"):
 
         prediction = model.predict(input_normalized)[0]
 
-        # 0 = Approved
-        # 1 = Rejected
+        # 1 = Approved
+        # 0 = Rejected
 
-        if prediction == 0:
+        if prediction == 1:
 
             st.markdown("""
             <div class='result-box approved'>
