@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import pickle
 import time
+import os
 
 # ---------------- PAGE CONFIG ---------------- #
 
@@ -14,59 +15,60 @@ st.set_page_config(
 
 # ---------------- LOAD MODEL ---------------- #
 
-model = pickle.load(open("loan_approval_model.pkl", "rb"))
-normalizer = pickle.load(open("normalizer.pkl", "rb"))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+model_path = os.path.join(BASE_DIR, "loan_approval_model.pkl")
+normalizer_path = os.path.join(BASE_DIR, "normalizer.pkl")
+
+model = pickle.load(open(model_path, "rb"))
+normalizer = pickle.load(open(normalizer_path, "rb"))
+
 # ---------------- CUSTOM CSS ---------------- #
 
 st.markdown("""
 <style>
-
-.stApp{
-    background-color:#f4f7fc;
+.stApp {
+    background-color: #f4f7fc;
 }
 
-.main-header{
-    background:linear-gradient(135deg,#003366,#0055aa);
-    padding:25px;
-    border-radius:15px;
-    text-align:center;
-    color:white;
-    margin-bottom:20px;
+.main-header {
+    background: linear-gradient(135deg,#003366,#0055aa);
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    color: white;
+    margin-bottom: 20px;
 }
 
-.card{
-    background:white;
-    padding:20px;
-    border-radius:15px;
-    box-shadow:0px 4px 15px rgba(0,0,0,0.1);
-    margin-bottom:20px;
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
 }
 
-.stButton > button{
-    background:#003366;
-    color:white;
-    font-size:18px;
-    font-weight:bold;
-    width:100%;
-    height:55px;
-    border-radius:10px;
+.stButton > button {
+    background: #003366;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    width: 100%;
+    height: 55px;
+    border-radius: 10px;
 }
-
 </style>
 """, unsafe_allow_html=True)
+
 # ---------------- SIDEBAR ---------------- #
 
 with st.sidebar:
-
     st.title("🏦 Smart Bank")
-
     st.markdown("---")
-
     st.write("Loan Management Portal")
-
     st.markdown("---")
-
     st.success("AI Powered Loan Approval System")
+
 # ---------------- HEADER ---------------- #
 
 st.markdown("""
@@ -75,53 +77,34 @@ st.markdown("""
 <p>AI Powered Banking Decision Platform</p>
 </div>
 """, unsafe_allow_html=True)
+
 # ---------------- CUSTOMER INFORMATION ---------------- #
 
 st.markdown('<div class="card">', unsafe_allow_html=True)
-
 st.subheader("👤 Customer Information")
 
 col1, col2 = st.columns(2)
 
 with col1:
-
     customer_name = st.text_input("Customer Name")
-
     customer_id = st.text_input("Customer ID")
-
-    education = st.selectbox(
-        "Education",
-        ["Graduate", "Not Graduate"]
-    )
+    education = st.selectbox("Education", ["Graduate", "Not Graduate"])
 
 with col2:
-
-    self_employed = st.selectbox(
-        "Employment Type",
-        ["No", "Yes"]
-    )
-
-    no_of_dependents = st.slider(
-        "Dependents",
-        0, 10, 2
-    )
-
-    cibil_score = st.slider(
-        "CIBIL Score",
-        300, 900, 750
-    )
+    self_employed = st.selectbox("Employment Type", ["Yes", "No"])
+    no_of_dependents = st.slider("Dependents", 0, 10, 2)
+    cibil_score = st.slider("CIBIL Score", 300, 900, 750)
 
 st.markdown('</div>', unsafe_allow_html=True)
+
 # ---------------- LOAN INFORMATION ---------------- #
 
 st.markdown('<div class="card">', unsafe_allow_html=True)
-
 st.subheader("💰 Loan Information")
 
 col1, col2 = st.columns(2)
 
 with col1:
-
     income_annum = st.number_input(
         "Annual Income (₹)",
         min_value=50000,
@@ -137,40 +120,21 @@ with col1:
     )
 
 with col2:
-
-    loan_term = st.slider(
-        "Loan Term (Years)",
-        1, 20, 5
-    )
+    loan_term = st.slider("Loan Term (Years)", 1, 20, 5)
 
     max_loan = income_annum * 5
-
-    st.metric(
-        "Maximum Eligible Loan",
-        f"₹ {max_loan:,.0f}"
-    )
+    st.metric("Maximum Eligible Loan", f"₹ {max_loan:,.0f}")
 
 st.markdown('</div>', unsafe_allow_html=True)
-# ---------------- CREDIT ANALYSIS ---------------- #
 
-if cibil_score >= 750:
-    st.success("🟢 Excellent Credit Score")
-
-elif cibil_score >= 650:
-    st.warning("🟡 Average Credit Score")
-
-else:
-    st.error("🔴 High Risk Customer")
 # ---------------- ASSETS INFORMATION ---------------- #
 
 st.markdown('<div class="card">', unsafe_allow_html=True)
-
 st.subheader("🏠 Assets Information")
 
 col1, col2 = st.columns(2)
 
 with col1:
-
     residential_assets_value = st.number_input(
         "Residential Assets Value (₹)",
         min_value=0,
@@ -184,7 +148,6 @@ with col1:
     )
 
 with col2:
-
     luxury_assets_value = st.number_input(
         "Luxury Assets Value (₹)",
         min_value=0,
@@ -197,8 +160,6 @@ with col2:
         value=150000
     )
 
-# Total Assets
-
 total_assets = (
     residential_assets_value +
     commercial_assets_value +
@@ -206,74 +167,46 @@ total_assets = (
     bank_asset_value
 )
 
-st.metric(
-    "💎 Total Assets",
-    f"₹ {total_assets:,.0f}"
-)
+st.metric("💎 Total Assets", f"₹ {total_assets:,.0f}")
 
 st.markdown('</div>', unsafe_allow_html=True)
-# ---------------- ASSET ANALYSIS ---------------- #
 
-if total_assets >= 1000000:
+# ---------------- ANALYSIS ---------------- #
 
-    st.success(
-        "🟢 Strong Asset Portfolio"
-    )
-
-elif total_assets >= 500000:
-
-    st.warning(
-        "🟡 Moderate Asset Portfolio"
-    )
-
+if cibil_score >= 750:
+    risk_category = "🟢 Low Risk"
+    st.success("🟢 Excellent Credit Score")
+elif cibil_score >= 650:
+    risk_category = "🟡 Medium Risk"
+    st.warning("🟡 Average Credit Score")
 else:
-
-    st.error(
-        "🔴 Weak Asset Portfolio"
-    )
-
-
-
+    risk_category = "🔴 High Risk"
+    st.error("🔴 High Risk Customer")
 
 # ---------------- APPLICATION SUMMARY ---------------- #
 
 st.markdown('<div class="card">', unsafe_allow_html=True)
-
 st.subheader("📋 Application Summary")
 
-# Risk Category
-
-if cibil_score >= 750:
-    risk_category = "🟢 Low Risk"
-
-elif cibil_score >= 650:
-    risk_category = "🟡 Medium Risk"
-
-else:
-    risk_category = "🔴 High Risk"
-
 st.info(f"""
-👤 Customer Name : {customer_name}
+👤 Customer Name: {customer_name}
 
-🆔 Customer ID : {customer_id}
+🆔 Customer ID: {customer_id}
 
-💰 Annual Income : ₹ {income_annum:,.0f}
+💰 Annual Income: ₹ {income_annum:,.0f}
 
-🏦 Loan Amount : ₹ {loan_amount:,.0f}
+🏦 Loan Amount: ₹ {loan_amount:,.0f}
 
-📅 Loan Term : {loan_term} Years
+📅 Loan Term: {loan_term} Years
 
-⭐ CIBIL Score : {cibil_score}
+⭐ CIBIL Score: {cibil_score}
 
-⚠ Risk Category : {risk_category}
+⚠ Risk Category: {risk_category}
 
-💎 Total Assets : ₹ {total_assets:,.0f}
+💎 Total Assets: ₹ {total_assets:,.0f}
 """)
 
 st.markdown('</div>', unsafe_allow_html=True)
-
-
-
 
 # ---------------- DASHBOARD METRICS ---------------- #
 
@@ -281,43 +214,19 @@ st.subheader("📊 Banking Dashboard")
 
 col1, col2, col3, col4 = st.columns(4)
 
-with col1:
-    st.metric(
-        "Income",
-        f"₹ {income_annum:,.0f}"
-    )
-
-with col2:
-    st.metric(
-        "Loan Amount",
-        f"₹ {loan_amount:,.0f}"
-    )
-
-with col3:
-    st.metric(
-        "CIBIL Score",
-        cibil_score
-    )
-
-with col4:
-    st.metric(
-        "Total Assets",
-        f"₹ {total_assets:,.0f}"
-    )
-
-
-
-
+col1.metric("Income", f"₹ {income_annum:,.0f}")
+col2.metric("Loan Amount", f"₹ {loan_amount:,.0f}")
+col3.metric("CIBIL Score", cibil_score)
+col4.metric("Total Assets", f"₹ {total_assets:,.0f}")
 
 # ---------------- ENCODING ---------------- #
 
 education_encoded = 0 if education == "Graduate" else 1
-
 self_employed_encoded = 1 if self_employed == "Yes" else 0
+
 # ---------------- INPUT DATAFRAME ---------------- #
 
 input_data = pd.DataFrame({
-
     ' no_of_dependents': [no_of_dependents],
     ' education': [education_encoded],
     ' self_employed': [self_employed_encoded],
@@ -329,27 +238,19 @@ input_data = pd.DataFrame({
     ' commercial_assets_value': [commercial_assets_value],
     ' luxury_assets_value': [luxury_assets_value],
     ' bank_asset_value': [bank_asset_value]
-
 })
-# ---------------- NORMALIZATION ---------------- #
 
-input_normalized = normalizer.transform(input_data)
 with st.expander("🔍 View Model Input"):
-
     st.dataframe(input_data)
-
-
-
 
 # ---------------- LOAN DECISION ENGINE ---------------- #
 
 st.markdown('<div class="card">', unsafe_allow_html=True)
-
 st.subheader("🏦 Loan Decision Engine")
 
-if st.button("🔍 Process Loan Application"):
+final_status = "Not Processed"
 
-    # Progress Bar
+if st.button("🔍 Process Loan Application"):
 
     progress = st.progress(0)
 
@@ -357,40 +258,24 @@ if st.button("🔍 Process Loan Application"):
         time.sleep(0.01)
         progress.progress(i + 1)
 
-    # Banking Validation Rules
-
     if loan_amount > income_annum * 5:
-
-        st.error(
-            "❌ Loan Rejected: Requested amount exceeds eligibility."
-        )
+        final_status = "REJECTED"
+        st.error("❌ Loan Rejected: Requested amount exceeds eligibility.")
 
     elif cibil_score < 600:
-
-        st.error(
-            "❌ Loan Rejected: Low CIBIL Score."
-        )
+        final_status = "REJECTED"
+        st.error("❌ Loan Rejected: Low CIBIL Score.")
 
     else:
+        input_normalized = normalizer.transform(input_data)
+        prediction = model.predict(input_normalized)[0]
 
-        prediction = model.predict(
-            input_normalized
-        )[0]
-
-        st.write(
-            f"Model Prediction Value: {prediction}"
-        )
-
-        # Approved = 1
-        # Rejected = 0
+        st.write(f"Model Prediction Value: {prediction}")
 
         if prediction == 1:
-
+            final_status = "APPROVED"
             st.balloons()
-
-            st.success(
-                "✅ LOAN APPROVED"
-            )
+            st.success("✅ LOAN APPROVED")
 
             st.markdown(f"""
 ### 🎉 Loan Sanction Details
@@ -409,10 +294,8 @@ if st.button("🔍 Process Loan Application"):
 """)
 
         else:
-
-            st.error(
-                "❌ LOAN REJECTED"
-            )
+            final_status = "REJECTED"
+            st.error("❌ LOAN REJECTED")
 
             st.markdown(f"""
 ### Rejection Details
@@ -428,27 +311,20 @@ if st.button("🔍 Process Loan Application"):
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-
-
+# ---------------- REPORT DOWNLOAD ---------------- #
 
 report = f"""
 SMART BANK LOAN REPORT
 
 Customer Name: {customer_name}
-
 Customer ID: {customer_id}
-
 Annual Income: ₹ {income_annum}
-
 Loan Amount: ₹ {loan_amount}
-
 Loan Term: {loan_term} Years
-
 CIBIL Score: {cibil_score}
-
 Total Assets: ₹ {total_assets}
-
-Status: APPROVED
+Risk Category: {risk_category}
+Status: {final_status}
 """
 
 st.download_button(
@@ -458,19 +334,13 @@ st.download_button(
     mime="text/plain"
 )
 
-
-
-
 # ---------------- FOOTER ---------------- #
 
 st.markdown("---")
 
-st.markdown(
-    """
-    <center>
-    <h4>🏦 Smart Bank Loan Approval System</h4>
-    <p>Powered by Machine Learning & Streamlit</p>
-    </center>
-    """,
-    unsafe_allow_html=True
-)
+st.markdown("""
+<center>
+<h4>🏦 Smart Bank Loan Approval System</h4>
+<p>Powered by Machine Learning & Streamlit</p>
+</center>
+""", unsafe_allow_html=True)
